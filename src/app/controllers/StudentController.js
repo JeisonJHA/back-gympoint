@@ -43,9 +43,7 @@ class StudentController {
     if (!(await schema.isValid(req.body))) {
       return res.status(400).json({ error: 'Validation fails.' });
     }
-    const student = await Student.findOne({
-      where: { email: req.body.email },
-    });
+    const student = await Student.findByPk(req.params.id);
     if (!student) {
       return res.status(400).json({ error: 'Student does not exists.' });
     }

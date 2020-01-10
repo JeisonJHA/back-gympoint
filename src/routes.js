@@ -4,6 +4,7 @@ import {
   UserController,
   SessionController,
   StudentController,
+  PlanController,
 } from './app/controllers';
 
 import authMiddleware from './app/middlewares/auth';
@@ -16,7 +17,12 @@ routes.post('/session', SessionController.store);
 routes.use(authMiddleware);
 
 routes.put('/users', UserController.update);
+
 routes.post('/students', StudentController.store);
-routes.put('/students', StudentController.update);
+routes.put('/students/:id', StudentController.update);
+
+routes.get('/plans', PlanController.index);
+routes.post('/plans', PlanController.store);
+routes.put('/plans/:id', PlanController.update);
 
 export default routes;
