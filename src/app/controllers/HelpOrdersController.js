@@ -1,9 +1,8 @@
 import * as Yup from 'yup';
-import { ptBR } from 'date-fns/locale';
-import { format } from 'date-fns';
 
+import QuestionAnswered from '../jobs/QuestionAnswered';
+import Queue from '../../lib/Queue';
 import { HelpOrders, Student, User } from '../models';
-import Mail from '../../lib/Mail';
 
 class HelpOrdersController {
   async store(req, res) {
@@ -40,27 +39,22 @@ class HelpOrdersController {
       ],
     });
     const { answer } = req.body;
-    await question.update({ answer, answered_at: new Date() });
 
     if (question.answer) {
       return res
         .status(400)
         .json({ error: 'This question was already answered.' });
     }
+
+    await question.update({ answer, answered_at: new Date() });
     const user = await User.findByPk(req.userId);
-    await Mail.sendMail({
-      to: `${question.Student.name} <${question.Student.email}>`,
-      subject: 'Pergunta respondida',
-      template: 'questionAnswered',
-      context: {
-        student: question.Student.name,
-        user: user.name,
-        answer,
-        date: format(new Date(), "dd 'de' MMMM", {
-          locale: ptBR,
-        }),
-      },
+
+    await Queue.add(QuestionAnswered.key, {
+      question,
+      user,
+      answer,
     });
+
     return res.json();
   }
 

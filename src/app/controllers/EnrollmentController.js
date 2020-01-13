@@ -1,12 +1,11 @@
 import * as Yup from 'yup';
-import { addMonths, parseISO, startOfDay, compareAsc, format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { addMonths, parseISO, startOfDay, compareAsc } from 'date-fns';
 import { Op } from 'sequelize';
 
-import Plan from '../models/Plan';
-import Student from '../models/Student';
-import Enrollment from '../models/Enrollment';
-import Mail from '../../lib/Mail';
+import NewEnrollmentMail from '../jobs/NewEnrollmentMail';
+import Queue from '../../lib/Queue';
+
+import { Plan, Student, Enrollment } from '../models';
 
 class EnrollmentController {
   async store(req, res) {
@@ -53,22 +52,15 @@ class EnrollmentController {
       end_date,
       price,
     });
-    await Mail.sendMail({
-      to: `${student.name} <${student.email}>`,
-      subject: 'Matrícula realizada',
-      template: 'newEnrollment',
-      context: {
-        student: student.name,
-        start: format(parseISO(start_date), "'dia' dd 'de' MMMM", {
-          locale: ptBR,
-        }),
-        end: format(end_date, "'dia' dd 'de' MMMM", {
-          locale: ptBR,
-        }),
-        plan: plan.title,
-        price,
-      },
+
+    await Queue.add(NewEnrollmentMail.key, {
+      student,
+      plan,
+      price,
+      start_date,
+      end_date,
     });
+
     return res.json({ end_date, price });
   }
 
