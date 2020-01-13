@@ -5,6 +5,7 @@ import {
   SessionController,
   StudentController,
   PlanController,
+  EnrollmentController,
 } from './app/controllers';
 
 import authMiddleware from './app/middlewares/auth';
@@ -24,5 +25,10 @@ routes.put('/students/:id', StudentController.update);
 routes.get('/plans', PlanController.index);
 routes.post('/plans', PlanController.store);
 routes.put('/plans/:id', PlanController.update);
+
+routes.get('/enrollment', EnrollmentController.index);
+routes.post('/enrollment', EnrollmentController.store);
+routes.put('/enrollment/:id', EnrollmentController.update);
+routes.delete('/enrollment/:id', EnrollmentController.delete);
 
 export default routes;
