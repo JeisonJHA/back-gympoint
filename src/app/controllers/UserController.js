@@ -1,4 +1,5 @@
 import * as Yup from 'yup';
+import { Op } from 'sequelize';
 import User from '../models/User';
 
 class UserController {
@@ -61,6 +62,16 @@ class UserController {
 
     const { id, name } = user.update(req.body);
     return res.json({ id, name, email });
+  }
+
+  async index(req, res) {
+    const { name } = req.query;
+    let where;
+    if (name) {
+      where = { where: { name: { [Op.like]: `%${name}%` } } };
+    }
+    const users = await User.findAll(where);
+    return res.json(users);
   }
 }
 
